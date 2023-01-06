@@ -8,11 +8,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import java.util.stream.Stream
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     lateinit var text : TextView
     @SuppressLint("MissingInflatedId")
+    lateinit var channel : Channel<Int>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -31,6 +34,42 @@ class MainActivity : AppCompatActivity() {
             funTion()
         }
 
+        CoroutineScope(Dispatchers.IO).launch {
+            getUserName().forEach{
+                Log.d("Tag", it)
+            }
+        }
+
+        producer()
+        consumer()
+
+    }
+
+    private fun producer() {
+        CoroutineScope(Dispatchers.IO).launch {
+            channel.send(1)
+            channel.send(2)
+        }
+    }
+
+    private  fun consumer() {
+        CoroutineScope(Dispatchers.IO).launch {
+            channel.receive()
+            channel.receive()
+        }
+    }
+
+    suspend fun getUserName() : List<String>{
+        val list = mutableListOf<String>()
+        list.add(userName(1))
+        list.add(userName(2))
+        list.add(userName(3))
+        list.add(userName(4))
+        return list
+    }
+    private suspend fun userName(id : Int) : String{
+        delay(1000)
+        return "User $id"
     }
 
     suspend fun funTion(){
@@ -146,5 +185,7 @@ class MainActivity : AppCompatActivity() {
 
         }
     }*/
+
+
 
 }
